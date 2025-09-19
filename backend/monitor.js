@@ -6,10 +6,10 @@ const winston = require('winston');
 const nodemailer = require('nodemailer');
 const mysql = require('mysql2/promise');
 
-const { buildAlertMessage, logAlertToFile } = require('./utils/helper');
+const { buildAlertMessage, logAlertToFile, sendSMS } = require('./utils/helper'); 
 const CHECK_INTERVAL = 1 * 60 * 60 * 1000; // 1 hour
 
-
+// -------------------- Logger --------------------
 const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
@@ -23,6 +23,7 @@ const logger = winston.createLogger({
   ]
 });
 
+// -------------------- DB Pool --------------------
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -30,6 +31,7 @@ const db = mysql.createPool({
   database: process.env.DB_NAME
 });
 
+// -------------------- Email Transport --------------------
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT),
@@ -40,7 +42,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-
+// -------------------- Check System Status --------------------
 async function checkSystemStatus() {
   try {
     const [services] = await db.query('SELECT * FROM services');
@@ -51,15 +53,12 @@ async function checkSystemStatus() {
 
         if (response.status >= 200 && response.status < 400) {
           logger.info(`System is UP: ${service.name} (${service.url}) - Status ${response.status}`);
-
           await db.query(
             'UPDATE services SET status = ?, last_checked = NOW() WHERE id = ?',
             ['up', service.id]
           );
-
         } else {
           logger.warn(`System reachable but returned error: ${service.name} - Status ${response.status}`);
-
           await db.query(
             'UPDATE services SET status = ?, last_checked = NOW() WHERE id = ?',
             ['error', service.id]
@@ -68,12 +67,12 @@ async function checkSystemStatus() {
 
       } catch (error) {
         logger.error(`System DOWN: ${service.name} (${service.url}) - ${error.message}`);
-
         await db.query(
           'UPDATE services SET status = ?, last_checked = NOW() WHERE id = ?',
           ['down', service.id]
         );
 
+        // Send alerts
         sendDowntimeAlert(service, error.message);
       }
     }
@@ -82,9 +81,11 @@ async function checkSystemStatus() {
   }
 }
 
+// -------------------- Send Downtime Alerts --------------------
 function sendDowntimeAlert(service, errorMessage) {
   const { subject, body } = buildAlertMessage(service.name, service.url, errorMessage);
 
+  // Send Email
   const mailOptions = {
     from: `"System Monitor" <${process.env.EMAIL_USER}>`,
     to: service.email,
@@ -94,13 +95,30 @@ function sendDowntimeAlert(service, errorMessage) {
 
   transporter.sendMail(mailOptions)
     .then(() => {
-      logger.info(`Alert sent for ${service.name} to ${service.email}`);
+      logger.info(`Email alert sent for ${service.name} to ${service.email}`);
       logAlertToFile(service, 'DOWN', errorMessage);
     })
     .catch(err => {
-      logger.error(`Failed to send alert for ${service.name}: ${err.message}`);
+      logger.error(`Failed to send email alert for ${service.name}: ${err.message}`);
     });
+
+  // Send SMS 
+  if (service.phone) {
+    const smsMessage = `ALERT: ${service.name} is DOWN. Issue: ${errorMessage}`;
+    sendSMS([service.phone], smsMessage) // sendSMS expects an array
+      .then(response => {
+        if (response && response.responseCode === "000") {
+          logger.info(`SMS alert sent for ${service.name} to ${service.phone}`);
+        } else {
+          logger.warn(`SMS not delivered for ${service.name}: ${JSON.stringify(response)}`);
+        }
+      })
+      .catch(err => {
+        logger.error(`Failed to send SMS alert for ${service.name}: ${err.message}`);
+      });
+  }
 }
 
+// -------------------- Start Monitoring --------------------
 checkSystemStatus();
 setInterval(checkSystemStatus, CHECK_INTERVAL);

@@ -128,9 +128,13 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, idx) => {
             let statusIcon = null;
-            if (service.status === "up") statusIcon = <CheckCircleIcon className="h-5 w-5 text-green-500 mr-1" />;
-            else if (service.status === "error") statusIcon = <ExclamationCircleIcon className="h-5 w-5 text-orange-400 mr-1" />;
-            else statusIcon = <XCircleIcon className="h-5 w-5 text-red-500 mr-1" />;
+            if (service.status === "up")
+              statusIcon = <CheckCircleIcon className="h-5 w-5 text-green-500 mr-1" />;
+            else if (service.status === "error")
+              statusIcon = <ExclamationCircleIcon className="h-5 w-5 text-orange-400 mr-1" />;
+            else
+              statusIcon = <XCircleIcon className="h-5 w-5 text-red-500 mr-1" />;
+
             return (
               <div
                 key={service.id}
@@ -139,10 +143,17 @@ export default function Dashboard() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     {statusIcon}
-                    <h3 className="text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">{service.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                      {service.name}
+                    </h3>
                   </div>
                   <p className="text-sm text-gray-500 truncate">{service.url}</p>
+                  {/* Active Time */}
+                  <p className="text-xs text-gray-500 mt-2">
+                    Active time: {service.active_time}
+                  </p>
                 </div>
+
                 <div className="mt-4 flex items-center justify-between">
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium shadow-sm ${service.status === "up"
@@ -163,6 +174,7 @@ export default function Dashboard() {
           })}
         </div>
       </div>
+
 
       {/* Status History Chart */}
       <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
