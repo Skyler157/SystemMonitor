@@ -1,23 +1,24 @@
 const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
-const { v4: uuidv4 } = require('uuid'); // <-- import uuid
 
-// -------------------- Timestamp --------------------
+const ALERT_HISTORY_FILE = path.join(__dirname, '../logs/alert-history.json');
+
+// -------------------- Time Formatter --------------------
 function formatTimestamp() {
   return moment().format('YYYY-MM-DD HH:mm:ss');
 }
 
-// -------------------- Alert Message --------------------
+// -------------------- Generic Email Alert Builder --------------------
 function buildAlertMessage(serviceName, url, errorMessage) {
   const timestamp = formatTimestamp();
-
   return {
-    subject: ` ${serviceName} Downtime Alert – ${timestamp}`,
+    subject: `${serviceName} Downtime Alert – ${timestamp}`,
     body: `Dear Client,
 
-We have detected that '${serviceName.toUpperCase()}' is currently unreachable and not responding as expected.
+We have detected that '${serviceName.toUpperCase()}' is currently unreachable or not responding as expected.
 
 Details:
 - URL: ${url}
@@ -31,67 +32,61 @@ System Monitoring Service.`
   };
 }
 
-// -------------------- Log Alert --------------------
-function logAlertToFile(service, status, message) {
-  const filePath = path.join(__dirname, '../logs/alert-history.json');
-
-  const entry = {
+// -------------------- Build Alert Objects for JSON --------------------
+function buildServiceAlertObject(service, errorMessage) {
+  return {
     id: Date.now(),
-    service_id: service.id,
-    name: service.name,
-    url: service.url,
-    status,
-    message,
+    service_id: service.Id || null,
+    url: service.Url,
+    status: 'DOWN',
+    message: errorMessage,
     timestamp: formatTimestamp()
   };
+}
 
+function buildDatabaseAlertObject(db, errorMessage) {
+  return {
+    id: Date.now(),
+    service_id: db.Id || null,
+    name: db.DbName,
+    url: db.Host,
+    status: 'DOWN',
+    message: errorMessage,
+    timestamp: formatTimestamp()
+  };
+}
+
+function buildDiskAlertObject(disk, errorMessage) {
+  return {
+    id: Date.now(),
+    service_id: disk.Id || null,
+    name: `${disk.Host}-${disk.Drive}`,
+    url: disk.Host,
+    status: 'WARNING',
+    message: errorMessage,
+    timestamp: formatTimestamp()
+  };
+}
+
+// -------------------- Log Alert to JSON --------------------
+function logAlertToFile(alertObject) {
   const history = (() => {
     try {
-      return fs.existsSync(filePath)
-        ? JSON.parse(fs.readFileSync(filePath, 'utf8'))
+      return fs.existsSync(ALERT_HISTORY_FILE)
+        ? JSON.parse(fs.readFileSync(ALERT_HISTORY_FILE, 'utf8'))
         : [];
     } catch {
       return [];
     }
   })();
 
-  history.push(entry);
-  fs.writeFileSync(filePath, JSON.stringify(history, null, 2));
-}
-
-// -------------------- Calculate Active Time --------------------
-function calculateActiveTime(service, history) {
-  const serviceHistory = history.filter(h => h.service_id === service.id);
-
-  if (serviceHistory.length === 0) return "N/A";
-
-  serviceHistory.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-  let lastDown = null;
-  for (let i = serviceHistory.length - 1; i >= 0; i--) {
-    if (serviceHistory[i].status.toLowerCase() === "down") {
-      lastDown = new Date(serviceHistory[i].timestamp);
-      break;
-    }
-  }
-
-  const startTime = lastDown || new Date(serviceHistory[0].timestamp);
-  const endTime =
-    service.status.toLowerCase() === "up"
-      ? new Date()
-      : new Date(service.last_checked);
-
-  const diffMs = endTime - startTime;
-  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-  return `${days}d ${hours}h ${minutes}m`;
+  history.push(alertObject);
+  fs.writeFileSync(ALERT_HISTORY_FILE, JSON.stringify(history, null, 2));
 }
 
 // -------------------- Send Bulk SMS --------------------
-async function sendSMS(recipients, messageText, priority = "Low", messageType = "Normal") {
-  const url = "http://172.17.40.39:22000/SMSServiceAPIV2/api/SMSService/sendBulkSMS";
+async function sendSMS(recipients, messageText, priority = 'Low', messageType = 'Normal') {
+  const url = 'http://172.17.40.39:22000/SMSServiceAPIV2/api/SMSService/sendBulkSMS';
 
   const payload = {
     recipient: Array.isArray(recipients) ? recipients : [recipients],
@@ -104,18 +99,23 @@ async function sendSMS(recipients, messageText, priority = "Low", messageType = 
   };
 
   try {
-    const response = await axios.post(url, payload);
-    return response.data; // Contains responseCode, ExternalReference, etc.
+    const response = await axios.post(url, payload, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return response.data;
   } catch (err) {
-    console.error("SMS send failed:", err.message);
+    console.error('SMS send failed:', err.message);
     throw err;
   }
 }
 
+// -------------------- Exports --------------------
 module.exports = {
   formatTimestamp,
   buildAlertMessage,
+  buildServiceAlertObject,
+  buildDatabaseAlertObject,
+  buildDiskAlertObject,
   logAlertToFile,
-  calculateActiveTime,
   sendSMS
 };
