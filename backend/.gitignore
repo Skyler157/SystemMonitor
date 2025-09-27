@@ -1,2 +1,8 @@
 config/.env
+
 logs/
+
+logs/monitor.log
+logs/alert-history.json
+
+node_modules/
