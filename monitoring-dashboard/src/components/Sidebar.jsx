@@ -11,7 +11,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="h-screen w-64 bg-gray-900 text-white flex flex-col shadow-lg">
+    <div className="flex flex-col w-64 bg-gray-900 text-white shadow-lg overflow-y-auto">
       <div className="text-2xl font-bold p-4 border-b border-gray-700 flex items-center justify-center">
         Monitoring Dashboard
       </div>
@@ -22,9 +22,8 @@ const Sidebar = () => {
             <Link
               key={link.path}
               to={link.path}
-              className={`flex items-center gap-2 p-2 rounded-md transition-colors duration-200 ${
-                isActive ? "bg-blue-600" : "hover:bg-gray-700"
-              }`}
+              className={`flex items-center gap-2 p-2 rounded-md transition-colors duration-200 ${isActive ? "bg-blue-600" : "hover:bg-gray-700"
+                }`}
             >
               {link.icon}
               <span>{link.name}</span>

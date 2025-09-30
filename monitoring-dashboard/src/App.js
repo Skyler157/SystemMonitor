@@ -8,9 +8,9 @@ import Disks from "./pages/Disks";
 function App() {
   return (
     <Router>
-      <div className="flex">
+      <div className="flex min-h-screen">
         <Sidebar />
-        <main className="flex-1 bg-gray-50 min-h-screen">
+        <main className="flex-1 bg-gray-50">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/services" element={<Services />} />
