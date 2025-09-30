@@ -13,7 +13,8 @@ export const fetchSummary = () => api.get("/api/summary");
 export const fetchLogs = () => api.get("/api/logs");
 
 export const fetchDowntimeBreakdown = () => api.get("/api/downtime-breakdown");
-export const fetchIncidentTrends = () => api.get("/api/incidents-trends");
+export const fetchIncidentTrends = (type = "all") =>
+  api.get(`/api/incidents-trends?type=${type}`);
 
 
 

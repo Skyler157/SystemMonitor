@@ -4,7 +4,6 @@ import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
 import Databases from "./pages/Databases";
 import Disks from "./pages/Disks";
-import Alerts from "./pages/Alerts";
 
 function App() {
   return (
@@ -17,7 +16,6 @@ function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/databases" element={<Databases />} />
             <Route path="/disks" element={<Disks />} />
-            <Route path="/alerts" element={<Alerts />} />
           </Routes>
         </main>
       </div>

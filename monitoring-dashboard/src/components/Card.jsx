@@ -6,3 +6,4 @@ const Card = ({ title, value }) => (
 );
 
 export default Card;
+ 

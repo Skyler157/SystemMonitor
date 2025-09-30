@@ -92,45 +92,27 @@ app.get('/api/services', async (req, res) => {
 
 // GET /api/summary
 app.get('/api/summary', async (req, res) => {
-    try {
-        const pool = await sql.connect(dbConfig);
-        const result = await pool.request().query('SELECT * FROM Services');
-        const services = result.recordset || [];
-        const alerts = readAlerts();
+  try {
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request().query('SELECT * FROM Services');
+    const services = result.recordset || [];
 
-        const enriched = services.map(s => {
-            const latest = [...alerts].reverse().find(a =>
-                (a.service_id && String(a.service_id) === String(s.Id)) ||
-                (a.url && s.Url && String(a.url) === String(s.Url))
-            );
-            const status = latest && latest.status === 'DOWN' ? 'DOWN' : 'UP';
-            return { ...s, status };
-        });
+    const total = services.length;
+    const down = services.filter(s => s.Status === 'DOWN').length;
+    const uptimePercent = total === 0 ? 100 : Math.round(((total - down) / total) * 10000) / 100;
 
-        const total = enriched.length;
-        const down = enriched.filter(s => s.status === 'DOWN').length;
-        const uptimePercent = total === 0 ? 100 : Math.round(((total - down) / total) * 10000) / 100;
-
-        let lastRun = null;
-        if (fs.existsSync(LOG_FILE)) {
-            const raw = fs.readFileSync(LOG_FILE, 'utf8');
-            const parsed = parseLogLines(raw);
-            if (parsed.length) lastRun = parsed[parsed.length - 1].timestamp;
-        }
-
-        const activeAlerts = alerts.filter(a => a.status === 'DOWN').length;
-
-        res.json({
-            totalServices: total,
-            downServices: down,
-            uptimePercent,
-            activeAlerts,
-            lastRun
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    res.json({
+      totalServices: total,
+      downServices: down,
+      uptimePercent,
+      activeAlerts: down, // or count from alerts if you want
+      lastRun: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
 
 // --- NEW ROUTES for your DBs and Disk tables ---
 
@@ -190,31 +172,39 @@ app.get('/api/downtime-breakdown', async (req, res) => {
 
 
 
-// GET /api/incidents-trends
+// GET /api/incidents-trends?type=
 app.get('/api/incidents-trends', (req, res) => {
-    try {
-        const alerts = readAlerts();
+  try {
+    const alerts = readAlerts();
+    const type = req.query.type; // service | db | disk | all
 
-        // group alerts by date
-        const counts = {};
-        alerts.forEach(a => {
-            const d = new Date(a.timestamp);
-            if (!isNaN(d)) {
-                const key = d.toISOString().split("T")[0]; // yyyy-mm-dd
-                counts[key] = (counts[key] || 0) + 1;
-            }
-        });
-
-        const trends = Object.entries(counts).map(([date, count]) => ({
-            date,
-            count
-        }));
-
-        res.json({ data: trends });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    // filter by type if provided
+    let filtered = alerts;
+    if (type && type !== 'all') {
+      filtered = alerts.filter(a => a.type === type);
     }
+
+    // group alerts by date
+    const counts = {};
+    filtered.forEach(a => {
+      const d = new Date(a.timestamp);
+      if (!isNaN(d)) {
+        const key = d.toISOString().split("T")[0]; // yyyy-mm-dd
+        counts[key] = (counts[key] || 0) + 1;
+      }
+    });
+
+    const trends = Object.entries(counts).map(([date, count]) => ({
+      date,
+      count
+    }));
+
+    res.json({ data: trends });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
 
 
 
