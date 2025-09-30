@@ -1,0 +1,24 @@
+[2025-09-26 21:46:45] INFO: --- Running monitoring checks ---
+[2025-09-26 21:46:45] INFO: Fetched 5 services
+[2025-09-26 21:46:45] INFO: Fetched 3 databases
+[2025-09-26 21:46:45] INFO: Fetched 5 disks
+[2025-09-26 21:46:47] INFO: System is UP: Youtube (https://youtube.com) - Status 200
+[2025-09-26 21:46:47] INFO: System SSL valid: Youtube (https://youtube.com) - 66 days left
+[2025-09-26 21:46:47] ERROR: System DOWN: Github (https://github74d.com) - getaddrinfo ENOTFOUND github74d.com
+[2025-09-26 21:46:50] INFO: Alert email sent to leahw6160@gmail.com
+[2025-09-26 21:46:52] ERROR: System DOWN: Payments API (https://api.example.com/payments) - getaddrinfo ENOTFOUND api.example.com
+[2025-09-26 21:46:54] INFO: Alert email sent to devops@example.com
+[2025-09-26 21:46:57] ERROR: System DOWN: Auth Service (https://auth.example.com) - getaddrinfo ENOTFOUND auth.example.com
+[2025-09-26 21:46:59] INFO: Alert email sent to security@example.com
+[2025-09-26 21:47:01] ERROR: System DOWN: Reports Service (https://reports.example.com) - getaddrinfo ENOTFOUND reports.example.com
+[2025-09-26 21:47:04] INFO: Alert email sent to leahgitau007@gmail.com
+[2025-09-26 21:47:06] INFO: Database is reachable: production_db (192.168.1.10)
+[2025-09-26 21:47:06] INFO: Database is reachable: analytics (192.168.1.15)
+[2025-09-26 21:47:06] INFO: Database is reachable: hr_system (192.168.1.20)
+[2025-09-26 21:47:06] INFO: Disk OK: Server1 (C:) - Usage 80%
+[2025-09-26 21:47:06] INFO: Disk OK: Server1 (D:) - Usage 20%
+[2025-09-26 21:47:06] ERROR: Disk ALERT: Server2 (/var) - Disk /var usage high: 95%
+[2025-09-26 21:47:08] INFO: Alert email sent to linux-admin@example.com
+[2025-09-26 21:47:11] INFO: Disk OK: Server2 (/home) - Usage 40%
+[2025-09-26 21:47:11] INFO: Disk OK: DBServer1 (/data) - Usage 85%
+[2025-09-26 21:47:11] INFO: --- Checks complete ---

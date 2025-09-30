@@ -1,6 +1,8 @@
 'use strict';
 require('dotenv').config({ path: './config/.env' });
 
+const fs = require('fs');
+const path = require('path');
 const axios = require('axios');
 const winston = require('winston');
 const nodemailer = require('nodemailer');
@@ -43,7 +45,6 @@ const logger = winston.createLogger({
   ]
 });
 
-
 // =====================
 // Database Queries
 // =====================
@@ -61,8 +62,52 @@ async function getDatabases() {
 
 async function getDisks() {
   const pool = await sql.connect(dbConfig);
-  const result = await pool.request().query('SELECT * FROM Disk');
+  const result = await pool.request().query('SELECT * FROM Disks');
   return result.recordset;
+}
+
+// =====================
+// Update Status Helpers
+// =====================
+async function updateStatus(table, id, status) {
+  const pool = await sql.connect(dbConfig);
+  await pool.request()
+    .input('status', sql.VarChar, status)
+    .input('last_checked', sql.DateTime, new Date())
+    .input('id', sql.Int, id)
+    .query(`
+      UPDATE ${table}
+      SET Status = @status,
+          LastChecked = @last_checked
+      WHERE Id = @id
+    `);
+}
+
+async function updateDiskStatus(id, status) {
+  const pool = await sql.connect(dbConfig);
+  await pool.request()
+    .input("status", sql.VarChar, status)
+    .input("last_checked", sql.DateTime, new Date())
+    .input("id", sql.Int, id)
+    .query(`
+      UPDATE Disks
+      SET Status = @status,
+          LastChecked = @last_checked
+      WHERE Id = @id
+    `);
+}
+
+// =====================
+// Append Alert JSON
+// =====================
+function appendAlertHistory(alertObj) {
+  const filePath = path.join(__dirname, 'alert-history.json');
+  let data = [];
+  if (fs.existsSync(filePath)) {
+    try { data = JSON.parse(fs.readFileSync(filePath, 'utf8')); } catch (_) { data = []; }
+  }
+  data.push(alertObj);
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
 // =====================
@@ -73,6 +118,7 @@ async function checkService(service) {
     const response = await axios.get(service.Url, { timeout: 10000 });
     if (response.status >= 200 && response.status < 300) {
       logger.info(`System is UP: ${service.Name} (${service.Url}) - Status ${response.status}`);
+      await updateStatus('Services', service.Id, 'UP');
     } else {
       throw new Error(`Bad status code: ${response.status}`);
     }
@@ -83,16 +129,89 @@ async function checkService(service) {
     const message = `System DOWN: ${service.Name} (${service.Url}) - ${err.message}`;
     logger.error(message);
 
-    // JSON alert
-    const alertObj = buildServiceAlertObject(service, err.message);
-    logAlertToFile(alertObj);
+    await updateStatus('Services', service.Id, 'DOWN');
 
-    // Email & SMS
+    const alertObj = buildServiceAlertObject(service, err.message);
+    alertObj.type = 'service';
+    alertObj.status = 'DOWN';
+    logAlertToFile(alertObj);
+    appendAlertHistory(alertObj);
+
     const emailMsg = buildAlertMessage(service.Name, service.Url, err.message);
-    try { await sendEmail(service.Email, emailMsg.subject, emailMsg.body); } catch (_) {}
-    try { await sendSMS(service.Phone, `${message}`); } catch (_) {}
+    try { await sendEmail(service.Email, emailMsg.subject, emailMsg.body); } catch (_) { }
+    try { await sendSMS(service.Phone, message); } catch (_) { }
   }
 }
+
+async function checkDatabase(db) {
+  try {
+    const pool = await sql.connect({
+      user: db.Username,
+      password: db.Password,
+      server: db.Host,
+      database: db.DbName,
+      options: { encrypt: false, trustServerCertificate: true }
+    });
+    await pool.request().query('SELECT 1');
+    logger.info(`Database is reachable: ${db.DbName} (${db.Host})`);
+    await updateStatus('Dbs', db.Id, 'UP');
+  } catch (err) {
+    const message = `Database DOWN: ${db.DbName} (${db.Host}) - ${err.message}`;
+    logger.error(message);
+
+    await updateStatus('Dbs', db.Id, 'DOWN');
+
+    const alertObj = buildDatabaseAlertObject(db, err.message);
+    alertObj.type = 'db';
+    alertObj.status = 'DOWN';
+    logAlertToFile(alertObj);
+    appendAlertHistory(alertObj);
+
+    const emailMsg = buildAlertMessage(db.DbName, db.Host, err.message);
+    try { await sendEmail(db.Email, emailMsg.subject, emailMsg.body); } catch (_) { }
+    try { await sendSMS(db.Phone, message); } catch (_) { }
+  }
+}
+
+async function checkDisk(disk) {
+  try {
+    let status = 'ok';
+    let message = '';
+
+    if (disk.UsagePercent > 95) {
+      status = 'critical';
+      message = `Disk ${disk.Drive} usage critical: ${disk.UsagePercent}%`;
+    } else if (disk.UsagePercent > 90) {
+      status = 'warning';
+      message = `Disk ${disk.Drive} usage high: ${disk.UsagePercent}%`;
+    }
+
+    if (message) {
+      logger.error(`Disk ALERT: ${disk.Host} (${disk.Drive}) - ${message}`);
+
+      const alertObj = buildDiskAlertObject(disk, message);
+      // Add type and status so API can count it
+      alertObj.type = 'disk';
+      alertObj.status = 'DOWN';
+
+      logAlertToFile(alertObj);
+      appendAlertHistory(alertObj);
+
+      const emailMsg = buildAlertMessage(`${disk.Host}-${disk.Drive}`, disk.Host, message);
+      try { await sendEmail(disk.Email, emailMsg.subject, emailMsg.body); } catch (_) {}
+      try { await sendSMS(disk.Phone, message); } catch (_) {}
+    } else {
+      logger.info(`Disk OK: ${disk.Host} (${disk.Drive}) - Usage ${disk.UsagePercent}%`);
+    }
+
+    // For 'ok' disks, status should reflect DB enum constraints ('ok', 'warning', 'critical')
+    await updateDiskStatus(disk.Id, status);
+
+  } catch (err) {
+    logger.error(`Disk check failed: ${disk.Host} (${disk.Drive}) - ${err.message}`);
+  }
+}
+
 
 async function checkSSL(service) {
   return new Promise(resolve => {
@@ -115,12 +234,13 @@ async function checkSSL(service) {
 
           const alertObj = buildServiceAlertObject(service, msg);
           logAlertToFile(alertObj);
+          appendAlertHistory(alertObj);
 
           logger[daysLeft < 0 ? 'error' : 'warn'](`System SSL: ${service.Name} (${service.Url}) - ${msg}`);
 
           const emailMsg = buildAlertMessage(service.Name, service.Url, msg);
-          try { sendEmail(service.Email, emailMsg.subject, emailMsg.body); } catch (_) {}
-          try { sendSMS(service.Phone, `[SSL ALERT] ${service.Name} - ${msg}`); } catch (_) {}
+          try { sendEmail(service.Email, emailMsg.subject, emailMsg.body); } catch (_) { }
+          try { sendSMS(service.Phone, `[SSL ALERT] ${service.Name} - ${msg}`); } catch (_) { }
         } else {
           logger.info(`System SSL valid: ${service.Name} (${service.Url}) - ${daysLeft} days left`);
         }
@@ -137,47 +257,6 @@ async function checkSSL(service) {
       resolve();
     }
   });
-}
-
-async function checkDatabase(db) {
-  try {
-    const pool = await sql.connect({
-      user: db.Username,
-      password: db.Password,
-      server: db.Host,
-      database: db.DbName,
-      options: { encrypt: false, trustServerCertificate: true }
-    });
-    await pool.request().query('SELECT 1');
-    logger.info(`Database is reachable: ${db.DbName} (${db.Host})`);
-  } catch (err) {
-    const message = `Database DOWN: ${db.DbName} (${db.Host}) - ${err.message}`;
-    logger.error(message);
-
-    const alertObj = buildDatabaseAlertObject(db, err.message);
-    logAlertToFile(alertObj);
-
-    const emailMsg = buildAlertMessage(db.DbName, db.Host, err.message);
-    try { await sendEmail(db.Email, emailMsg.subject, emailMsg.body); } catch (_) {}
-    try { await sendSMS(db.Phone, message); } catch (_) {}
-  }
-}
-
-async function checkDisk(disk) {
-  try {
-    if (disk.UsagePercent > 90) throw new Error(`Disk ${disk.Drive} usage high: ${disk.UsagePercent}%`);
-    logger.info(`Disk OK: ${disk.Host} (${disk.Drive}) - Usage ${disk.UsagePercent}%`);
-  } catch (err) {
-    const message = `Disk ALERT: ${disk.Host} (${disk.Drive}) - ${err.message}`;
-    logger.error(message);
-
-    const alertObj = buildDiskAlertObject(disk, err.message);
-    logAlertToFile(alertObj);
-
-    const emailMsg = buildAlertMessage(`${disk.Host}-${disk.Drive}`, disk.Host, err.message);
-    try { await sendEmail(disk.Email, emailMsg.subject, emailMsg.body); } catch (_) {}
-    try { await sendSMS(disk.Phone, message); } catch (_) {}
-  }
 }
 
 // =====================
