@@ -1,8 +1,8 @@
+# Node modules
+node_modules/
+
+# Environment variables
 config/.env
 
-logs/
-
-logs/monitor.log
-logs/alert-history.json
-
-node_modules/
+# Runtime logs
+backend/logs/
