@@ -855,3 +855,21 @@
 [2025-10-02 10:05:49] INFO: Database is reachable: analytics (192.168.1.15)
 [2025-10-02 10:05:49] INFO: Database is reachable: hr_system (192.168.1.20)
 [2025-10-02 10:05:49] INFO: --- Checks complete ---
+[2025-10-02 10:18:16] INFO: --- Running monitoring checks ---
+[2025-10-02 10:18:16] INFO: Fetched 5 services
+[2025-10-02 10:18:16] INFO: Fetched 3 databases
+[2025-10-02 10:18:16] INFO: Fetched 0 disks
+[2025-10-02 10:18:18] INFO: System is UP: Youtube (https://youtube.com) - Status 200
+[2025-10-02 10:18:18] INFO: System SSL valid: Youtube (https://youtube.com) - 68 days left
+[2025-10-02 10:18:18] ERROR: System DOWN: Github (https://githu234b.com) - getaddrinfo ENOTFOUND githu234b.com
+[2025-10-02 10:18:39] ERROR: Email failed: connect ETIMEDOUT 64.233.166.108:465
+[2025-10-02 10:18:40] ERROR: System DOWN: Payments API (https://api.example.com/payments) - getaddrinfo ENOTFOUND api.example.com
+[2025-10-02 10:19:01] ERROR: Email failed: connect ETIMEDOUT 64.233.166.108:465
+[2025-10-02 10:19:01] ERROR: System DOWN: Auth Service (https://auth.example.com) - getaddrinfo ENOTFOUND auth.example.com
+[2025-10-02 10:19:22] ERROR: Email failed: connect ETIMEDOUT 64.233.166.108:465
+[2025-10-02 10:19:22] ERROR: System DOWN: Reports Service (https://reports.example.com) - getaddrinfo ENOTFOUND reports.example.com
+[2025-10-02 10:19:43] ERROR: Email failed: connect ETIMEDOUT 64.233.166.108:465
+[2025-10-02 10:19:43] INFO: Database is reachable: production_db (192.168.1.10)
+[2025-10-02 10:19:43] INFO: Database is reachable: analytics (192.168.1.15)
+[2025-10-02 10:19:43] INFO: Database is reachable: hr_system (192.168.1.20)
+[2025-10-02 10:19:43] INFO: --- Checks complete ---

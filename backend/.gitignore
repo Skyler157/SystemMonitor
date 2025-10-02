@@ -9,3 +9,5 @@ backend/logs/
 logs/
 alert-history.json
 monitor.log
+
+services/ api.js
