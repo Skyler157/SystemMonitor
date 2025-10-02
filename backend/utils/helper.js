@@ -6,12 +6,12 @@ const axios = require('axios');
 
 const ALERT_HISTORY_FILE = path.join(__dirname, '../logs/alert-history.json');
 
-// -------------------- Time Formatter --------------------
+// Time Formatter
 function formatTimestamp() {
   return moment().format('YYYY-MM-DD HH:mm:ss');
 }
 
-// -------------------- Generic Email Alert Builder --------------------
+// Email Alert Builder 
 function buildAlertMessage(serviceName, url, errorMessage) {
   const timestamp = formatTimestamp();
   return {
@@ -32,7 +32,17 @@ System Monitoring Service.`
   };
 }
 
-// -------------------- Build Alert Objects for JSON --------------------
+function buildSMSMessage(serviceName, errorMessage) {
+  const timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+  return `${serviceName.toUpperCase()} Downtime Alert!
+
+Issue: ${errorMessage}
+Time: ${timestamp}
+
+Please investigate as soon as possible. - System Monitoring Service`;
+}
+
+// Build Alert Objects for JSON 
 function buildServiceAlertObject(service, errorMessage) {
   return {
     id: Date.now(),
@@ -68,7 +78,7 @@ function buildDiskAlertObject(disk, errorMessage) {
   };
 }
 
-// -------------------- Log Alert to JSON --------------------
+// Log Alert to JSON
 function logAlertToFile(alertObject) {
   const history = (() => {
     try {
@@ -84,35 +94,42 @@ function logAlertToFile(alertObject) {
   fs.writeFileSync(ALERT_HISTORY_FILE, JSON.stringify(history, null, 2));
 }
 
-// -------------------- Send Bulk SMS --------------------
-async function sendSMS(recipients, messageText, priority = 'Low', messageType = 'Normal') {
-  const url = 'http://172.17.40.39:22000/SMSServiceAPIV2/api/SMSService/sendBulkSMS';
+//Send SMS
+async function sendSMS(msisdn, messageText, priority = "Low", messageType = "Normal") {
+  const url = "http://172.17.40.39:22000/SMSServiceAPIV2/api/SMSService/sendSMS";
+
+  const recipient = Array.isArray(msisdn) ? msisdn[0] : msisdn;
 
   const payload = {
-    recipient: Array.isArray(recipients) ? recipients : [recipients],
+    Msisdn: recipient,
     MessageText: messageText,
     UniqueID: uuidv4(),
     Priority: priority,
     MessageType: messageType,
-    UserID: process.env.SMS_USER,
-    PassWD: process.env.SMS_PASS
+    UserID: process.env.SMS_USER || "CSUSER",
+    PassWD: process.env.SMS_PASS || "Craftsilicon@2103"
   };
 
   try {
     const response = await axios.post(url, payload, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" }
     });
+    console.log(`[SMS] Sent to ${recipient}:`, response.data);
     return response.data;
   } catch (err) {
-    console.error('SMS send failed:', err.message);
+    console.error(`[SMS] Failed to send to ${recipient}:`, err.message);
+    if (err.response) console.error("Server response:", err.response.data);
     throw err;
   }
 }
 
-// -------------------- Exports --------------------
+
+
+// Exports 
 module.exports = {
   formatTimestamp,
   buildAlertMessage,
+  buildSMSMessage,
   buildServiceAlertObject,
   buildDatabaseAlertObject,
   buildDiskAlertObject,

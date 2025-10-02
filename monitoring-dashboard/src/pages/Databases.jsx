@@ -19,7 +19,6 @@ import {
     Legend,
 } from "recharts";
 
-// Date formatter (Nairobi timezone)
 const formatDate = (dateString) => {
     if (!dateString) return "—";
     try {
@@ -77,7 +76,7 @@ const Databases = () => {
     }, []);
 
 
-    // --- Handle search/filter
+    // Handle search/filter
     useEffect(() => {
         let data = [...databases];
 
@@ -104,7 +103,7 @@ const Databases = () => {
 
     if (!summary) return <p className="p-6">Loading databases...</p>;
 
-    // --- Database Type Breakdown
+    // Database Type Breakdown
     const typeCounts = databases.reduce((acc, db) => {
         const type = db.Type || "Unknown";
         acc[type] = (acc[type] || 0) + 1;
@@ -115,7 +114,6 @@ const Databases = () => {
         value,
     }));
 
-    // --- Active Alerts = DBs that are DOWN
     const activeAlerts = databases.filter((d) => d.Status === "DOWN").length;
 
 

@@ -924,5 +924,356 @@
     "message": "Disk /var usage high: 95%",
     "timestamp": "2025-09-30 12:00:32",
     "type": "disk"
+  },
+  {
+    "id": 1759327199238,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-01 16:59:59",
+    "type": "service"
+  },
+  {
+    "id": 1759327224159,
+    "service_id": 3,
+    "url": "https://api.example.com/payments",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND api.example.com",
+    "timestamp": "2025-10-01 17:00:24",
+    "type": "service"
+  },
+  {
+    "id": 1759327245552,
+    "service_id": 4,
+    "url": "https://auth.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND auth.example.com",
+    "timestamp": "2025-10-01 17:00:45",
+    "type": "service"
+  },
+  {
+    "id": 1759327266940,
+    "service_id": 5,
+    "url": "https://reports.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND reports.example.com",
+    "timestamp": "2025-10-01 17:01:06",
+    "type": "service"
+  },
+  {
+    "id": 1759329158430,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-01 17:32:38",
+    "type": "service"
+  },
+  {
+    "id": 1759329180094,
+    "service_id": 3,
+    "url": "https://api.example.com/payments",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND api.example.com",
+    "timestamp": "2025-10-01 17:33:00",
+    "type": "service"
+  },
+  {
+    "id": 1759329201485,
+    "service_id": 4,
+    "url": "https://auth.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND auth.example.com",
+    "timestamp": "2025-10-01 17:33:21",
+    "type": "service"
+  },
+  {
+    "id": 1759329222857,
+    "service_id": 5,
+    "url": "https://reports.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND reports.example.com",
+    "timestamp": "2025-10-01 17:33:42",
+    "type": "service"
+  },
+  {
+    "id": 1759330581095,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-01 17:56:21",
+    "type": "service"
+  },
+  {
+    "id": 1759330602496,
+    "service_id": 3,
+    "url": "https://api.example.com/payments",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND api.example.com",
+    "timestamp": "2025-10-01 17:56:42",
+    "type": "service"
+  },
+  {
+    "id": 1759330623673,
+    "service_id": 4,
+    "url": "https://auth.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND auth.example.com",
+    "timestamp": "2025-10-01 17:57:03",
+    "type": "service"
+  },
+  {
+    "id": 1759330644770,
+    "service_id": 5,
+    "url": "https://reports.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND reports.example.com",
+    "timestamp": "2025-10-01 17:57:24",
+    "type": "service"
+  },
+  {
+    "id": 1759331233007,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-01 18:07:13",
+    "type": "service"
+  },
+  {
+    "id": 1759384849972,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-02 09:00:49",
+    "type": "service"
+  },
+  {
+    "id": 1759384871501,
+    "service_id": 3,
+    "url": "https://api.example.com/payments",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND api.example.com",
+    "timestamp": "2025-10-02 09:01:11",
+    "type": "service"
+  },
+  {
+    "id": 1759384892863,
+    "service_id": 4,
+    "url": "https://auth.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND auth.example.com",
+    "timestamp": "2025-10-02 09:01:32",
+    "type": "service"
+  },
+  {
+    "id": 1759384914215,
+    "service_id": 5,
+    "url": "https://reports.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND reports.example.com",
+    "timestamp": "2025-10-02 09:01:54",
+    "type": "service"
+  },
+  {
+    "id": 1759386673131,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-02 09:31:13",
+    "type": "service"
+  },
+  {
+    "id": 1759386694772,
+    "service_id": 3,
+    "url": "https://api.example.com/payments",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND api.example.com",
+    "timestamp": "2025-10-02 09:31:34",
+    "type": "service"
+  },
+  {
+    "id": 1759386716137,
+    "service_id": 4,
+    "url": "https://auth.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND auth.example.com",
+    "timestamp": "2025-10-02 09:31:56",
+    "type": "service"
+  },
+  {
+    "id": 1759386737498,
+    "service_id": 5,
+    "url": "https://reports.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND reports.example.com",
+    "timestamp": "2025-10-02 09:32:17",
+    "type": "service"
+  },
+  {
+    "id": 1759387104505,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-02 09:38:24",
+    "type": "service"
+  },
+  {
+    "id": 1759387125668,
+    "service_id": 3,
+    "url": "https://api.example.com/payments",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND api.example.com",
+    "timestamp": "2025-10-02 09:38:45",
+    "type": "service"
+  },
+  {
+    "id": 1759387146763,
+    "service_id": 4,
+    "url": "https://auth.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND auth.example.com",
+    "timestamp": "2025-10-02 09:39:06",
+    "type": "service"
+  },
+  {
+    "id": 1759387167848,
+    "service_id": 5,
+    "url": "https://reports.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND reports.example.com",
+    "timestamp": "2025-10-02 09:39:27",
+    "type": "service"
+  },
+  {
+    "id": 1759387735972,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-02 09:48:55",
+    "type": "service"
+  },
+  {
+    "id": 1759387757381,
+    "service_id": 3,
+    "url": "https://api.example.com/payments",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND api.example.com",
+    "timestamp": "2025-10-02 09:49:17",
+    "type": "service"
+  },
+  {
+    "id": 1759387778492,
+    "service_id": 4,
+    "url": "https://auth.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND auth.example.com",
+    "timestamp": "2025-10-02 09:49:38",
+    "type": "service"
+  },
+  {
+    "id": 1759387799664,
+    "service_id": 5,
+    "url": "https://reports.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND reports.example.com",
+    "timestamp": "2025-10-02 09:49:59",
+    "type": "service"
+  },
+  {
+    "id": 1759388314218,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-02 09:58:34",
+    "type": "service"
+  },
+  {
+    "id": 1759388531832,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-02 10:02:11",
+    "type": "service"
+  },
+  {
+    "id": 1759388663937,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-02 10:04:23",
+    "type": "service"
+  },
+  {
+    "id": 1759388685658,
+    "service_id": 3,
+    "url": "https://api.example.com/payments",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND api.example.com",
+    "timestamp": "2025-10-02 10:04:45",
+    "type": "service"
+  },
+  {
+    "id": 1759388707047,
+    "service_id": 4,
+    "url": "https://auth.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND auth.example.com",
+    "timestamp": "2025-10-02 10:05:07",
+    "type": "service"
+  },
+  {
+    "id": 1759388728207,
+    "service_id": 5,
+    "url": "https://reports.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND reports.example.com",
+    "timestamp": "2025-10-02 10:05:28",
+    "type": "service"
+  },
+  {
+    "id": 1759389498651,
+    "service_id": 2,
+    "url": "https://githu234b.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND githu234b.com",
+    "timestamp": "2025-10-02 10:18:18",
+    "type": "service"
+  },
+  {
+    "id": 1759389520029,
+    "service_id": 3,
+    "url": "https://api.example.com/payments",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND api.example.com",
+    "timestamp": "2025-10-02 10:18:40",
+    "type": "service"
+  },
+  {
+    "id": 1759389541143,
+    "service_id": 4,
+    "url": "https://auth.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND auth.example.com",
+    "timestamp": "2025-10-02 10:19:01",
+    "type": "service"
+  },
+  {
+    "id": 1759389562231,
+    "service_id": 5,
+    "url": "https://reports.example.com",
+    "status": "DOWN",
+    "message": "getaddrinfo ENOTFOUND reports.example.com",
+    "timestamp": "2025-10-02 10:19:22",
+    "type": "service"
   }
 ]

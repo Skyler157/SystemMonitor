@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Database, Server, HardDrive } from "lucide-react"; // Example icons
+import { Home, Database, Server, HardDrive } from "lucide-react"; 
 
 const Sidebar = () => {
   const location = useLocation();

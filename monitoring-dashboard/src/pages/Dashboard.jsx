@@ -45,13 +45,13 @@ const Dashboard = () => {
         console.log("Downtime API:", d?.data);
         console.log("Trends API:", t?.data);
 
-        // --- Summary ---
+        // Summary
         setSummary(s?.data || { uptimePercent: 100, activeAlerts: 0, downServices: 0, lastRun: null });
 
-        // --- Alerts ---
+        // Alerts 
         setAlerts(Array.isArray(a?.data) ? a.data.slice(0, 5) : []);
 
-        // --- Downtime
+        // Downtime
         const downtimeRaw = d?.data?.data || d?.data || {};
         console.log("Raw downtime:", downtimeRaw);
 
@@ -63,7 +63,7 @@ const Dashboard = () => {
         setDowntime(downtimeData);
 
 
-        // --- Trends ---
+        //Trends 
         const trendsRaw = t?.data?.data || t?.data || [];
         console.log("Raw trends array:", trendsRaw);
 

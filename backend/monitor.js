@@ -15,23 +15,23 @@ const {
   buildDatabaseAlertObject,
   buildDiskAlertObject,
   logAlertToFile,
-  sendSMS
+  sendSMS,
+  buildSMSMessage
 } = require('./utils/helper');
 
 const CHECK_INTERVAL = 1 * 60 * 60 * 1000; // 1 hour
 
-// =====================
 // SQL Server Config
-// =====================
 const dbConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   server: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT, 10) || 55770,
   database: process.env.DB_NAME,
   options: { encrypt: false, trustServerCertificate: true }
 };
 
-// -------------------- Logger --------------------
+//Logger
 const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
@@ -45,9 +45,9 @@ const logger = winston.createLogger({
   ]
 });
 
-// =====================
+
 // Database Queries
-// =====================
+
 async function getServices() {
   const pool = await sql.connect(dbConfig);
   const result = await pool.request().query('SELECT * FROM Services');
@@ -66,9 +66,8 @@ async function getDisks() {
   return result.recordset;
 }
 
-// =====================
+
 // Update Status Helpers
-// =====================
 async function updateStatus(table, id, status) {
   const pool = await sql.connect(dbConfig);
   await pool.request()
@@ -97,9 +96,8 @@ async function updateDiskStatus(id, status) {
     `);
 }
 
-// =====================
 // Append Alert JSON
-// =====================
+
 function appendAlertHistory(alertObj) {
   const filePath = path.join(__dirname, 'alert-history.json');
   let data = [];
@@ -110,9 +108,9 @@ function appendAlertHistory(alertObj) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-// =====================
+
 // Checks
-// =====================
+
 async function checkService(service) {
   try {
     const response = await axios.get(service.Url, { timeout: 10000 });
@@ -139,7 +137,9 @@ async function checkService(service) {
 
     const emailMsg = buildAlertMessage(service.Name, service.Url, err.message);
     try { await sendEmail(service.Email, emailMsg.subject, emailMsg.body); } catch (_) { }
-    try { await sendSMS(service.Phone, message); } catch (_) { }
+    const smsMsg = buildSMSMessage(service.Name, err.message);
+    try { await sendSMS(service.SmsNumber, smsMsg); } catch (_) { }
+
   }
 }
 
@@ -150,6 +150,7 @@ async function checkDatabase(db) {
       password: db.Password,
       server: db.Host,
       database: db.DbName,
+      port: db.Port || 1433,
       options: { encrypt: false, trustServerCertificate: true }
     });
     await pool.request().query('SELECT 1');
@@ -169,7 +170,7 @@ async function checkDatabase(db) {
 
     const emailMsg = buildAlertMessage(db.DbName, db.Host, err.message);
     try { await sendEmail(db.Email, emailMsg.subject, emailMsg.body); } catch (_) { }
-    try { await sendSMS(db.Phone, message); } catch (_) { }
+    try { await sendSMS(db.SmsNumber, message); } catch (_) { }
   }
 }
 
@@ -198,13 +199,12 @@ async function checkDisk(disk) {
       appendAlertHistory(alertObj);
 
       const emailMsg = buildAlertMessage(`${disk.Host}-${disk.Drive}`, disk.Host, message);
-      try { await sendEmail(disk.Email, emailMsg.subject, emailMsg.body); } catch (_) {}
-      try { await sendSMS(disk.Phone, message); } catch (_) {}
+      try { await sendEmail(disk.Email, emailMsg.subject, emailMsg.body); } catch (_) { }
+      try { await sendSMS(disk.SmsNumber, message); } catch (_) { }
     } else {
       logger.info(`Disk OK: ${disk.Host} (${disk.Drive}) - Usage ${disk.UsagePercent}%`);
     }
 
-    // For 'ok' disks, status should reflect DB enum constraints ('ok', 'warning', 'critical')
     await updateDiskStatus(disk.Id, status);
 
   } catch (err) {
@@ -240,7 +240,7 @@ async function checkSSL(service) {
 
           const emailMsg = buildAlertMessage(service.Name, service.Url, msg);
           try { sendEmail(service.Email, emailMsg.subject, emailMsg.body); } catch (_) { }
-          try { sendSMS(service.Phone, `[SSL ALERT] ${service.Name} - ${msg}`); } catch (_) { }
+          try { sendSMS(service.SmsNumber, `[SSL ALERT] ${service.Name} - ${msg}`); } catch (_) { }
         } else {
           logger.info(`System SSL valid: ${service.Name} (${service.Url}) - ${daysLeft} days left`);
         }
@@ -259,9 +259,7 @@ async function checkSSL(service) {
   });
 }
 
-// =====================
 // Send Email
-// =====================
 async function sendEmail(to, subject, body) {
   if (!to) return;
   try {
@@ -276,9 +274,7 @@ async function sendEmail(to, subject, body) {
   }
 }
 
-// =====================
 // Main Runner
-// =====================
 async function runChecks() {
   try {
     logger.info('--- Running monitoring checks ---');
@@ -302,6 +298,5 @@ async function runChecks() {
   }
 }
 
-// Run immediately + on schedule
 runChecks();
 setInterval(runChecks, CHECK_INTERVAL);

@@ -16,6 +16,7 @@ const dbConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
     server: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT, 10) || 1433,
     database: process.env.DB_NAME,
     options: { encrypt: false, trustServerCertificate: true }
 };
@@ -114,7 +115,6 @@ app.get('/api/summary', async (req, res) => {
 });
 
 
-// --- NEW ROUTES for your DBs and Disk tables ---
 
 // GET /api/dbs
 app.get('/api/dbs', async (req, res) => {
@@ -189,7 +189,7 @@ app.get('/api/incidents-trends', (req, res) => {
     filtered.forEach(a => {
       const d = new Date(a.timestamp);
       if (!isNaN(d)) {
-        const key = d.toISOString().split("T")[0]; // yyyy-mm-dd
+        const key = d.toISOString().split("T")[0]; 
         counts[key] = (counts[key] || 0) + 1;
       }
     });

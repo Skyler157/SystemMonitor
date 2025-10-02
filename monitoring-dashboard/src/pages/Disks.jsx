@@ -46,7 +46,7 @@ const Disks = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // --- Filtered disks based on search & status
+  //Filtered disks based on search & status
   const filteredDisks = useMemo(() => {
     return disks.filter((d) => {
       const matchesSearch =
@@ -61,7 +61,7 @@ const Disks = () => {
     });
   }, [disks, search, statusFilter]);
 
-  // --- Disk status breakdown for PieChart
+  //Disk status breakdown for PieChart
   const statusData = useMemo(() => {
     const counts = {};
     disks.forEach((d) => {

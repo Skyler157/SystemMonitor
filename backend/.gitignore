@@ -6,3 +6,6 @@ config/.env
 
 # Runtime logs
 backend/logs/
+logs/
+alert-history.json
+monitor.log
